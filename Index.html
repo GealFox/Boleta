@@ -1,0 +1,244 @@
+let boletaCounter = 1;
+
+document
+  .getElementById("product-form")
+  .addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const descripcion = document.getElementById("descripcion").value;
+    const cantidad = document.getElementById("cantidad").value;
+    const precioUnitario = document.getElementById("precio_unitario").value;
+    const total = cantidad * precioUnitario;
+
+    const table = document
+      .getElementById("boleta-table")
+      .getElementsByTagName("tbody")[0];
+    const newRow = table.insertRow();
+
+    newRow.insertCell(0).innerText = descripcion;
+    newRow.insertCell(1).innerText = cantidad;
+    newRow.insertCell(2).innerText = precioUnitario;
+    newRow.insertCell(3).innerText = total;
+
+    // Actualizar el total de la boleta
+    const totalBoletaElement = document.getElementById("total-boleta");
+    const totalBoleta = parseFloat(totalBoletaElement.innerText);
+    totalBoletaElement.innerText = totalBoleta + total;
+
+    document.getElementById("product-form").reset();
+  });
+
+function limpiarDatos() {
+  document.getElementById("client-form").reset();
+  document.getElementById("product-form").reset();
+
+  const table = document
+    .getElementById("boleta-table")
+    .getElementsByTagName("tbody")[0];
+  while (table.rows.length > 0) {
+    table.deleteRow(0);
+  }
+
+  document.getElementById("total-boleta").innerText = "0";
+}
+
+function generarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const fecha = document.getElementById('fecha').value;
+    const nombre = document.getElementById('nombre').value;
+    const direccion = document.getElementById('direccion').value;
+    const telefono = document.getElementById('telefono').value;
+
+    // Crear el contenido HTML basado en la plantilla presupuesto.html
+    let contenidoHTML = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Presupuesto</title>
+            <style>
+                body {
+                    font-family: sans-serif;
+                    margin: 0;
+                    padding: 0;
+                }
+                header {
+                    background-color: #f0f0f0;
+                    padding: 20px;
+                    text-align: center;
+                }
+                h1 {
+                    margin-bottom: 10px;
+                }
+                p {
+                    margin: 5px 0; /* Small margin between paragraphs */
+                }
+                main {
+                    padding: 20px;
+                }
+                .informacion-empresa,
+                .informacion-cliente,
+                .productos,
+                .observaciones {
+                    background-color: #f5f5f5; /* Light gray background for sections */
+                    border: 1px solid #ccc; /* Border for sections */
+                    padding: 15px; /* Padding inside sections */
+                    margin-bottom: 20px; /* Space between sections */
+                }
+                .informacion-empresa {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .nombre-empresa {
+                    text-align: left;
+                    font-weight: bold;
+                }
+                .datos-empresa {
+                    text-align: right;
+                }
+                .informacion-cliente,
+                .productos,
+                .observaciones {
+                    text-align: left; /* Left alignment for content within sections */
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                th, td {
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                }
+                th {
+                    background-color: #e0e0e0; /* Light gray background for table headers */
+                }
+                .observaciones {
+                    font-style: italic; /* Italic text for observations */
+                }
+                .total {
+                    font-weight: bold; /* Bold font weight for total amount */
+                }
+                .btn {
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin: 10px;
+                    text-align: center;
+                    box-sizing: border-box;
+                }
+                .btn:hover {
+                    background-color: #0056b3;
+                }
+                .btn-container {
+                    text-align: center;
+                    margin-top: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <header>
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhnkOHx_fLXm5rd7jilPbQQhyoP2li-8o2IRm4GO52UY70qRl3Zg00JnX7X3uQmp7JdkgYAvZM4A-ZZZ7UtIBvJw6xL1YnaPiI70E9zqK8PZqm4T2lahda6uVoK7QXB4hJdV7La6igRKaiGzGBF4xFJB14WuDS7rw7k3zFzNBmyiAdQ5sP2aCmO1VG1dvLp/s720/logo%20Ebenezer%20nissi.png" alt="Logo Ebenezer" style="width:300px;">
+                <h1>Presupuesto</h1>
+                <p>(documento no válido como factura)</p>
+            </header>
+            <main>
+                <section class="informacion-empresa">
+                    <div class="nombre-empresa">
+                        <h2>Ebenezer Nissi </h2>
+                    </div>
+                    <div class="datos-empresa">
+                        <p>FECHA: ${fecha}</p>
+                        <p>Art. de Librería</p>
+                        <p>Regalería Cristiana</p>
+                        <p>Accesorios para exaltar al Rey de Reyes.</p>
+                        <p>11-6118-1585</p>
+                    </div>
+                </section>
+                <section class="informacion-cliente">
+                    <p>Apellido y Nombre: ${nombre}</p>
+                    <p>Dirección: ${direccion}</p>
+                    <p>Tel: ${telefono}</p>
+                </section>
+                <section class="productos">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DESCRIPCIÓN</th>
+                                <th>CANT</th>
+                                <th>Precio Unitario</th>
+                                <th>MONTO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+
+    // Agregar productos a la tabla en el HTML generado
+    const table = document.getElementById('boleta-table');
+    for (let i = 1; i < table.rows.length; i++) { // Comenzar desde el índice 1 para omitir la primera fila
+        const row = table.rows[i];
+        const descripcion = row.cells[0].innerText;
+        const cantidad = row.cells[1].innerText;
+        const precioUnitario = row.cells[2].innerText;
+        const total = row.cells[3].innerText;
+
+        contenidoHTML += `
+            <tr>
+                <td>${descripcion}</td>
+                <td>${cantidad}</td>
+                <td>${precioUnitario}</td>
+                <td>${total}</td>
+            </tr>
+        `;
+    }
+
+    // Obtener el total de la boleta y resaltar en negrita
+    const totalBoleta = document.getElementById('total-boleta').innerText;
+
+    // Cerrar el contenido HTML
+    contenidoHTML += `
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3">Total</td>
+                                <td class="total">${totalBoleta}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </section>
+                <section class="observaciones">
+                    <p>Observaciones:</p>
+                </section>
+                <div class="btn-container">
+                    <button class="btn" onclick="window.print()">Imprimir</button>
+                    <button class="btn" id="save-pdf">Guardar PDF</button>
+                </div>
+            </main>
+            <script>
+                document.getElementById('save-pdf').addEventListener('click', function () {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    doc.fromHTML(document.body, 10, 10, { 
+                        'width': 180 
+                    });
+                    
+                    const fechaActual = new Date().toLocaleDateString('es-ES').replace(/\//g, '-');
+                    const nombreArchivo = \`Boleta_Electronica_${boletaCounter}_${fechaActual}.pdf\`;
+                    boletaCounter
+        </body>
+        </html>
+    `;
+
+  // Abrir el contenido generado en una nueva ventana del navegador
+  const newWindow = window.open();
+  newWindow.document.open();
+  newWindow.document.write(contenidoHTML);
+  newWindow.document.close();
+}
